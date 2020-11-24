@@ -1,0 +1,121 @@
+const UserModel = require("../models/User.Model") // appel lel les attributs ta3 l'user,usermodel bech n'importih//
+
+    // l'ajout d'un utilisateur et son enregistrement dans la base de données, ay fonction 3andhha requete w reponse //
+
+    // crud les fonctions principales f traitement des attributs // 
+
+const jwt = require("jsonwebtoken")
+
+const bcrypt = require("bcrypt")
+
+module.exports = {
+
+    create: function(req, res) {
+
+        const User = new UserModel(req.body)
+
+            // save: fonction asynchrone permet de sauvegarder //
+
+        User.save(function(err, item) {
+
+            res.json(item)
+
+        })
+
+    },
+
+    read: function(req, res) {
+
+        UserModel.find({}, function(err, items) {
+
+            res.json(items)
+
+        })
+
+    },
+
+    delete: function(req, res) {
+
+        UserModel.findByIdAndDelete({ _id: req.params.id }, function(err, item) {
+
+            res.json({
+
+                msg: "user was deleted with success "
+
+            })
+
+        })
+
+    },
+
+    update: function(req, res) {
+
+        UserModel.update({ _id: req.params.id }, req.body, function(err, item) {
+
+
+
+            res.json(item)
+
+        })
+
+    },
+
+    authenticate: function(req, res) {
+
+        UserModel.find({ email: req.body.email }, function(err, userInfo) {
+
+            if (err) {
+
+                res.json({
+
+                    msg: "erreur"
+
+                })
+
+            } else {
+
+                if (bcrypt.compare(req.body.password, userInfo.password)) {
+
+                    const token = jwt.sign({ id: userInfo._id },
+
+                        req.app.get("secretKey"), { expiresIn: "5h" })
+
+                    res.json({
+
+                        status: "success",
+
+                        message: "user found",
+
+                        data: {
+
+                            user: userInfo,
+
+                            token: token
+
+
+
+                        }
+
+                    })
+
+                } else {
+
+                    res.json({
+
+                        status: "error",
+
+                        message: "invalid email or password",
+
+                        data: null
+
+                    })
+
+                }
+
+            }
+
+        })
+
+    }
+
+}
